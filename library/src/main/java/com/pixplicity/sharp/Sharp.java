@@ -28,6 +28,7 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
@@ -288,6 +289,11 @@ public abstract class Sharp {
     public Sharp addColorReplacement(Integer searchColor, Integer replaceColor) {
         mSearchColor = searchColor;
         mReplaceColor = replaceColor;
+        return this;
+    }
+
+    public Sharp setColorFilter(ColorFilter colorFilter) {
+        mSvgHandler.setColorFilter(colorFilter);
         return this;
     }
 
@@ -1212,10 +1218,15 @@ public abstract class Sharp {
         private HashMap<String, String> mDefs = new HashMap<>();
         private boolean mReadingDefs = false;
         private Stack<String> mReadIgnoreStack = new Stack<>();
+        private ColorFilter colorFilter;
 
         private SvgHandler(Sharp sharp, Picture picture) {
             mSharp = sharp;
             mPicture = picture;
+        }
+
+        public void setColorFilter(ColorFilter colorFilter) {
+            this.colorFilter = colorFilter;
         }
 
         public boolean isWhiteMode() {
@@ -1282,9 +1293,12 @@ public abstract class Sharp {
             mStrokePaint = new Paint();
             mStrokePaint.setAntiAlias(true);
             mStrokePaint.setStyle(Paint.Style.STROKE);
+            mStrokePaint.setColorFilter(colorFilter);
+
 
             mFillPaint = new Paint();
             mFillPaint.setAntiAlias(true);
+            mFillPaint.setColorFilter(colorFilter);
             mFillPaint.setStyle(Paint.Style.FILL);
 
             mMatrixStack.push(new Matrix());
