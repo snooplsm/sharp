@@ -95,10 +95,7 @@ public abstract class Sharp {
 
     private final SvgHandler mSvgHandler;
 
-    // FIXME make hash map
-    private Integer mSearchColor = null;
-    private Integer mReplaceColor = null;
-    private HashMap<String, Integer> mIdToColor = null;
+    private HashMap<Integer, Integer> mIdToColor = new HashMap<>();
 
     private boolean mWhiteMode = false;
 
@@ -281,14 +278,8 @@ public abstract class Sharp {
         return this;
     }
 
-    public Sharp setIdToColor(HashMap<String, Integer> idToColor) {
-        mIdToColor = idToColor;
-        return this;
-    }
-
     public Sharp addColorReplacement(Integer searchColor, Integer replaceColor) {
-        mSearchColor = searchColor;
-        mReplaceColor = replaceColor;
+        mIdToColor.put(searchColor,replaceColor);
         return this;
     }
 
@@ -298,17 +289,8 @@ public abstract class Sharp {
     }
 
     public int getReplacementColor(int color) {
-        if (mSearchColor != null && mSearchColor == color) {
-            return mReplaceColor;
-        }
-        return color;
-    }
-
-    public int getColorForId(String id, int color) {
-        if (mIdToColor != null) {
-            if (id.length() != 0 && mIdToColor.containsKey(id)) {
-                color = mIdToColor.get(id);
-            }
+        if(mIdToColor.containsKey(color)) {
+            return mIdToColor.get(color);
         }
         return color;
     }
@@ -1237,10 +1219,6 @@ public abstract class Sharp {
             return mSharp.getReplacementColor(color);
         }
 
-        public int getColorForId(String id, int color) {
-            return mSharp.getColorForId(id, color);
-        }
-
         private void onSvgStart() {
             mSharp.onSvgStart(mCanvas, mBounds);
         }
@@ -1514,10 +1492,9 @@ public abstract class Sharp {
         }
 
         private void doColor(Properties atts, Integer color, boolean fillMode, Paint paint) {
-            int c = (0xFFFFFF & color) | 0xFF000000;
+            int c = color;
             String id = atts.getString("id");
             c = getReplacementColor(c);
-            c = getColorForId(id, c);
             paint.setShader(null);
             paint.setColor(c);
             Float opacity = atts.getFloat("opacity");
@@ -1670,9 +1647,7 @@ public abstract class Sharp {
                 return;
             }
             boolean forcedToHide = false;
-            if (id != null && getColorForId(id, -1) == Color.TRANSPARENT) {
-                forcedToHide = true;
-            }
+
             boolean hidden2 = hidden || forcedToHide;
 
             if (!hidden2 && localName.equals("use")) {
